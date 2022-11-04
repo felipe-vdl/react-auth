@@ -1,25 +1,58 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useCallback } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
-function App() {
+// Pages
+import HomePage from './pages/Home';
+import LoginPage from './pages/Login';
+import ProfilePage from './pages/Profile';
+
+// Components
+import Layout from './components/Layout';
+import { authActions } from './store/auth';
+
+let logoutTimer;
+
+export default function App() {
+  const auth = useSelector(st => st.auth);
+  const { token } = auth;
+  const dispatch = useDispatch();
+
+  const logoutHandler = useCallback(() => {
+    dispatch(authActions.logout());
+    clearInterval(logoutTimer);
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (token) {
+      let timeLeft = localStorage.getItem('expiration') - Date.now();
+      console.log(timeLeft);
+      if (timeLeft <= 0) {
+        logoutHandler();
+      } else {
+        logoutTimer = setTimeout(logoutHandler, timeLeft);
+      }
+    }
+  }, [token, logoutHandler]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<HomePage />} />
+        {auth.isLoggedIn ? (
+          <>
+            <Route path="perfil" element={<ProfilePage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </>
+        ) : (
+          <>
+            <Route path="login" element={<LoginPage />} />
+            <Route path="home" element={<Navigate to="/login" replace />} />
+            <Route path="perfil" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </>
+        )}
+      </Route>
+    </Routes>
   );
 }
-
-export default App;
