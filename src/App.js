@@ -26,7 +26,6 @@ export default function App() {
   useEffect(() => {
     if (token) {
       let timeLeft = localStorage.getItem('expiration') - Date.now();
-      console.log(timeLeft);
       if (timeLeft <= 0) {
         logoutHandler();
       } else {

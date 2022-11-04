@@ -35,7 +35,7 @@ export default function Login() {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(form),
+          body: JSON.stringify({email: form.email, password: form.password, lembrar: form.lembrar}),
         });
 
         if (!response.ok) {
@@ -45,6 +45,7 @@ export default function Login() {
         }
 
         const data = await response.json();
+
         dispatch(authActions.login({
           token: data.access_token, expiration: data.expires_in
         }));
